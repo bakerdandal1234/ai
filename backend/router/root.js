@@ -65,7 +65,7 @@ router.post('/signup', signupValidation, async (req, res) => {
     const accessToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '15s' }
     );
 
     const refreshToken = jwt.sign(
@@ -75,8 +75,8 @@ router.post('/signup', signupValidation, async (req, res) => {
     );
 
     // Save refresh token to user (will be automatically hashed)
-    user.refreshToken = refreshToken;
-    await user.save();
+    // user.refreshToken = refreshToken;
+    // await user.save();
 
     // Set refresh token in HTTP-only cookie
     res.cookie('refreshToken', refreshToken, {
@@ -137,18 +137,18 @@ router.post('/login', async (req, res) => {
     }
 
    // Check if user is verified
-    if (!user.isVerified) {
-      return res.status(401).json({ 
-        message: 'Please verify your email before logging in',
-        needsVerification: true 
-      });
-    }
+    // if (!user.isVerified) {
+    //   return res.status(401).json({ 
+    //     message: 'Please verify your email before logging in',
+    //     needsVerification: true 
+    //   });
+    // }
 
     // Generate tokens
     const accessToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '20s' }
     );
 
     const refreshToken = jwt.sign(
@@ -157,11 +157,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Store refresh token hash in database
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    user.refreshToken = hashedRefreshToken;
-    await user.save();
-
+    
     // Set refresh token in http-only cookie
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -208,11 +204,8 @@ router.post('/refresh', async (req, res) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    // Verify stored refresh token
-    if (!user.refreshToken) {
-      console.log('No stored refresh token for user:', user._id); // Debug log
-      return res.status(401).json({ message: 'Invalid refresh token' });
-    }
+
+    
 
     // Generate new tokens
     const accessToken = jwt.sign(

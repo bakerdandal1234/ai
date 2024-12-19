@@ -24,10 +24,6 @@ const userSchema = new mongoose.Schema({
     verificationTokenExpiry: Date,
     resetPasswordToken: String,
     resetPasswordExpiry: Date,
-    refreshToken: {
-        type: String,
-        select: false // Don't include in normal queries
-    }
 }, { timestamps: true });
 
 // Hash password before saving
@@ -36,15 +32,6 @@ userSchema.pre('save', async function(next) {
         try {
             const salt = await bcrypt.genSalt(10);
             this.password = await bcrypt.hash(this.password, salt);
-        } catch (error) {
-            return next(error);
-        }
-    }
-
-    if (this.isModified('refreshToken') && this.refreshToken) {
-        try {
-            const salt = await bcrypt.genSalt(10);
-            this.refreshToken = await bcrypt.hash(this.refreshToken, salt);
         } catch (error) {
             return next(error);
         }
